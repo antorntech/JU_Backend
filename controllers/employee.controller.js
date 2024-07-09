@@ -3,6 +3,7 @@ const Employee = require("../models/Employee");
 module.exports.allEmployee = async (req, res) => {
   try {
     const users = await Employee.find();
+    users.sort((a, b) => a.officeId - b.officeId);
     res.status(200).json(users);
   } catch (error) {
     console.log(error, "Error");
@@ -32,15 +33,33 @@ module.exports.singleEmployee = async (req, res) => {
 module.exports.addEmployee = async (req, res, next) => {
   try {
     const getEmail = req.body.officeEmail;
+    const getOfficeId = req.body.officeId;
 
     const emailPattern = /^[\w-]+(\.[\w-]+)*@octetit\.info$/;
     if (!emailPattern.test(getEmail)) {
-      res.status(400).send("Invalid email address");
+      return res.status(400).json({
+        status: "fail",
+        message: "Invalid email address",
+      });
     } else {
-      const existingEmployee = await Employee.findOne({ email: getEmail });
+      const existingOfficeId = await Employee.findOne({
+        officeId: getOfficeId,
+      });
 
-      if (existingEmployee) {
-        res.status(400).send("Employee already exists");
+      const existingEmail = await Employee.findOne({
+        officeEmail: getEmail,
+      });
+
+      if (existingOfficeId) {
+        return res.status(400).json({
+          status: "fail",
+          message: "Office Id already exists",
+        });
+      } else if (existingEmail) {
+        return res.status(400).json({
+          status: "fail",
+          message: "Email already exists",
+        });
       } else {
         // Check if files were uploaded
         if (req.file) {
@@ -68,6 +87,7 @@ module.exports.updateEmployee = async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    // Check if files were uploaded
     if (req.file) {
       Object.assign(req.body, {
         avatar: "/uploads/images/" + req.file.filename,
@@ -78,12 +98,10 @@ module.exports.updateEmployee = async (req, res, next) => {
       new: true,
     });
 
-    const updatedEmployee = await Employee.findOne({ _id: id });
-
     return res.status(200).json({
       status: "success",
       message: "Data updated successfully!",
-      data: updatedEmployee,
+      data: employee,
     });
   } catch (error) {
     console.log(error, "Error");
