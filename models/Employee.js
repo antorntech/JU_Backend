@@ -16,6 +16,9 @@ const employeeSchema = new mongoose.Schema(
     designation: {
       type: String,
     },
+    address: {
+      type: String,
+    },
     officeEmail: {
       type: String,
       required: true,

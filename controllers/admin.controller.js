@@ -87,6 +87,19 @@ module.exports.getAdmin = async (req, res) => {
   }
 };
 
+module.exports.getAllAdmin = async (req, res) => {
+  try {
+    const admins = await Admin.find();
+    return res
+      .status(200)
+      .json({ message: "Admins fetched successfully", admins: admins });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 module.exports.updatedAdmin = async (req, res) => {
   try {
     const { adminId } = req.params;
@@ -117,6 +130,18 @@ module.exports.updatedAdmin = async (req, res) => {
       .json({ message: "Admin updated successfully", admin: adminToUpdate });
   } catch (error) {
     console.log("Error", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+module.exports.deleteAdmin = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+    await Admin.findByIdAndDelete({ _id: adminId });
+    return res.status(200).json({ message: "Admin deleted successfully" });
+  } catch (error) {
     return res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
