@@ -6,7 +6,7 @@ const JWT_SECRET_KEY = "secret123";
 
 module.exports.createAdmin = async (req, res) => {
   try {
-    const { userName, email, password } = req.body;
+    const { userName, email, password, role } = req.body;
 
     // Check if an admin with the same email already exists
     const existingAdmin = await Admin.findOne({ email });
@@ -24,6 +24,7 @@ module.exports.createAdmin = async (req, res) => {
       userName,
       email,
       password: hashedPassword,
+      role,
     });
 
     const token = jwt.sign(
@@ -61,9 +62,13 @@ module.exports.adminLogin = async (req, res) => {
     }
 
     // Generate a JWT token
-    const token = jwt.sign({ adminId: admin._id }, JWT_SECRET_KEY, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { adminId: admin._id, role: admin.role },
+      JWT_SECRET_KEY,
+      {
+        expiresIn: "1h",
+      }
+    );
 
     // Return the token to the client
     return res.status(200).json({ message: "Login successful", admin, token });
